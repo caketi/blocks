@@ -1,23 +1,24 @@
 /** @jsx jsx */
 import { jsx, Styled } from 'theme-ui'
+import { Textarea } from '@theme-ui/components'
 import prettier from 'prettier/standalone'
 import parserJS from 'prettier/parser-babylon'
 
 import { Clipboard, Check } from 'react-feather'
 
-import { useEditor } from './editor-context'
+import * as transforms from './transforms'
+import { useEditor } from './providers/editor'
+import { useCode } from './providers/code'
 import InlineRender from './inline-render'
 import { PreviewArea, Device } from './device-preview'
-
 import { IconButton } from './ui'
 import useCopyToClipboard from './use-copy-to-clipboard'
+import { useScope } from './providers/scope'
 
 const Wrap = props => (
   <div
     sx={{
       position: 'relative',
-      width: '60%',
-      height: '100%',
       backgroundColor: 'white',
       overflow: 'auto'
     }}
@@ -34,36 +35,38 @@ const Copy = ({ toCopy }) => {
       sx={{ position: 'absolute', right: '-4px' }}
     >
       {hasCopied ? (
-        <Check size={20} sx={{ color: 'green' }} aria-label="Copied" />
+        <Check sx={{ color: 'green' }} aria-label="Copied" />
       ) : (
-        <Clipboard size={20} aria-label="Copy" />
+        <Clipboard size={16} aria-label="Copy" />
       )}
     </IconButton>
   )
 }
 
-export default ({ code, transformedCode, scope, theme }) => {
+const Canvas = () => {
+  const { theme, ...scope } = useScope()
+  const { code, transformedCode } = useCode()
   const { mode } = useEditor()
-  const formattedCode = prettier.format(code, {
+  const rawCode = transforms.toRawJSX(code)
+  const formattedCode = prettier.format(rawCode, {
     parser: 'babel',
     plugins: [parserJS]
   })
+
+  console.log('rerendering canvas')
 
   if (mode === 'code') {
     return (
       <Wrap>
         <Copy toCopy={formattedCode} />
-        <Styled.pre
-          language="js"
+        <Textarea
           sx={{
-            mt: 0,
-            backgroundColor: 'white',
-            color: 'black'
+            height: '100%',
+            border: 'none',
+            borderRadius: 0
           }}
-          contentEditable={true}
-        >
-          {formattedCode}
-        </Styled.pre>
+          value={formattedCode}
+        />
       </Wrap>
     )
   }
@@ -91,3 +94,5 @@ export default ({ code, transformedCode, scope, theme }) => {
     </Wrap>
   )
 }
+
+export default Canvas
