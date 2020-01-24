@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx, Styled } from 'theme-ui'
+import { jsx } from 'theme-ui'
 import { Textarea } from '@theme-ui/components'
 import prettier from 'prettier/standalone'
 import parserJS from 'prettier/parser-babylon'
